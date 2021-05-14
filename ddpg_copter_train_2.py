@@ -30,16 +30,19 @@ param_noise = None
 action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.5) * np.ones(n_actions))
 action_noise_2 = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(1) * np.ones(n_actions))
 
-model = DDPG(CustomDDPGPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise)
-model_2 = DDPG(CustomDDPGPolicy_2, env, verbose=1, param_noise=param_noise, action_noise=action_noise)
-model_3 = DDPG(CustomDDPGPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise_2)
-model_4 = DDPG(CustomDDPGPolicy, env, verbose=1, param_noise=param_noise, action_noise=action_noise)
+model = DDPG(CustomDDPGPolicy_2, env, verbose=1, param_noise=param_noise, action_noise=action_noise,gamma=0.9)
+model_2 = DDPG(CustomDDPGPolicy_2, env, verbose=1, param_noise=param_noise, action_noise=action_noise,gamma=0.95)
+model_3 = DDPG(CustomDDPGPolicy_2, env, verbose=1, param_noise=param_noise, action_noise=action_noise,gamma=0.99)
+model_4 = DDPG(CustomDDPGPolicy_2, env, verbose=1, param_noise=param_noise, action_noise=action_noise,gamma=0.995)
 
-
+print("Model 1 Train ")
 model.learn(total_timesteps=100000)
+print("Model 2 Train ")
 model_2.learn(total_timesteps=100000)
+print("Model 3 Train ")
 model_3.learn(total_timesteps=100000)
-model_4.learn(total_timesteps=200000)
+print("Model 4 Train ")
+model_4.learn(total_timesteps=100000)
 
 model.save("ddpg_copter")
 model_2.save("ddpg_copter_2")
@@ -55,59 +58,91 @@ del model_4
 print("*************************************\n        Model 1 Result        \n*************************************")
 
 model = DDPG.load("ddpg_copter")
-
-
-obs = env.reset()
-while True:
+n_episode=10
+episode_reward=np.zeros(n_episode)
+for i in range(n_episode):
+    obs = env.reset()
+    sum_reward=0
+    while True:
     
-    action, _states = model.predict(obs)
-    obs, rewards, dones, info = env.step(action)
-    if dones:
-        break
-    env.render()
+        action, _states = model.predict(obs)
+        obs, rewards, dones, info = env.step(action)
+        sum_reward+=rewards
+        if dones:
+            break
+        env.render()
+    episode_reward[i]=sum_reward
+
+model_1_result=np.mean(episode_reward)
     
 print("*************************************\n        Model 2 Result        \n*************************************")
 
 model_2 = DDPG.load("ddpg_copter_2")
-
-
-obs = env.reset()
-while True:
+n_episode=10
+episode_reward=np.zeros(n_episode)
+for i in range(n_episode):
+    obs = env.reset()
+    sum_reward=0
+    while True:
     
-    action, _states = model_2.predict(obs)
-    obs, rewards, dones, info = env.step(action)
-    if dones:
-        break
-    env.render()
+        action, _states = model_2.predict(obs)
+        obs, rewards, dones, info = env.step(action)
+        sum_reward+=rewards
+        if dones:
+            break
+        env.render()
+    episode_reward[i]=sum_reward
+
+model_2_result=np.mean(episode_reward)
         
 print("*************************************\n        Model 3 Result        \n*************************************")
 
 model_3 = DDPG.load("ddpg_copter_3")
 
-
-obs = env.reset()
-while True:
+n_episode=10
+episode_reward=np.zeros(n_episode)
+for i in range(n_episode):
+    obs = env.reset()
+    sum_reward=0
+    while True:
     
-    action, _states = model_3.predict(obs)
-    obs, rewards, dones, info = env.step(action)
-    if dones:
-        break
-    env.render()
-        
+        action, _states = model_3.predict(obs)
+        obs, rewards, dones, info = env.step(action)
+        sum_reward+=rewards
+        if dones:
+            break
+        env.render()
+    episode_reward[i]=sum_reward
+
+model_3_result=np.mean(episode_reward)
+
 print("*************************************\n        Model 4 Result        \n*************************************")
 
 model_4 = DDPG.load("ddpg_copter_4")
 
-
-obs = env.reset()
-while True:
+n_episode=10
+episode_reward=np.zeros(n_episode)
+for i in range(n_episode):
+    obs = env.reset()
+    sum_reward=0
+    while True:
     
-    action, _states = model_4.predict(obs)
-    obs, rewards, dones, info = env.step(action)
-    if dones:
-        break
-    env.render()
-        
+        action, _states = model_4.predict(obs)
+        obs, rewards, dones, info = env.step(action)
+        sum_reward+=rewards
+        if dones:
+            break
+        env.render()
+    episode_reward[i]=sum_reward
+
+model_4_result=np.mean(episode_reward)
+
+
+print("********************\n        Results        \n******************")
+print("Model 1(gamma=0.9) : {} avarage reward".format(model_1_result))
+print("Model 2(gamma=0.95) : {} avarage reward".format(model_2_result))
+print("Model 3(gamma=0.99) : {} avarage reward".format(model_3_result))
+print("Model 4(gamma=0.995) : {} avarage reward".format(model_4_result))  
     
     
     
